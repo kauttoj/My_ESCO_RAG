@@ -3,7 +3,7 @@ Testing LLM RAG with ESCO ontology data
 
 This is a simple RAG with GUI implementation to match ESCO skills and occupations to a given free text, e.g., CV or job advertisement. Simple GUI shows LLM-suggested skills/occupations and other potential skills/occupations from the vectorstore. Suggestions are recomputed as the user accepts/declines current skills/occupations.
 
-![image](https://github.com/kauttoj/My_ESCO_RAG/assets/17804946/68713cea-f99b-43d1-b861-2861cc608536)
+![Screenshot 2024-01-25 162104](https://github.com/kauttoj/My_ESCO_RAG/assets/17804946/1453ce60-5ffe-439a-9c2c-301e13658611)
 
 Repo also includes a simple GUI to test HEADAI model for ESCO and script to compute vectorstores from ESCO data.
 
