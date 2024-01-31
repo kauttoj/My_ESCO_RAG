@@ -15,19 +15,22 @@ import tiktoken
 from langchain.globals import set_debug
 set_debug(False) # set True to get more details of process
 
-# YOU MUST HAVE "OPENAI_API_KEY" environmental variable set!
+# This is a test code for a simple RAG system to convert text into skill and occupation suggestions. This simple RAG uses LLM embeddings as vector database (retrieval) and LLM chat model (augmented generation) to pick most relevant skills. You need OpenAI token to use GPT-3.5 and GPT-4.
+# Currently retrieval can be made either with OpenAI model or local Hugginface model. Generation can be only made via OpenAI.
 
-# LLM_MODEL is used in generating final answer, must be some "advanced" model
+# !!! Note: All API calls to OpenAI will cost you a little. Check their current pricing and monitor your usage !!!
+
+# LLM_MODEL is used in generating final answer, must be some "advanced" model. YOU MUST HAVE "OPENAI_API_KEY" environmental variable set!
 LLM_MODEL =  'gpt-3.5-turbo-1106' # 'gpt-4-1106-preview'
 VECTORSTORE_MAX_RETRIEVED = 25 # Max number of documents to retrieve from vectorstore. Don't go over context window
 VECTORSTORE_MAX_SUGGESTED = [20,10] # for [skills, occupations] how many potential items to suggest from vectorstore
 LLM_MAX_PICKS = [15,5] # for [skills, occupations] how many items LLM must pick from retrieved options
 
 # paths to precomputed databases for dedicated languages
-#LANGUAGE_SEL = 'English' # can do also Finnish for multilingual models
-LANGUAGE_SEL = 'Finnish' # best for finnish content
+LANGUAGE_SEL = 'English' # can do also Finnish for multilingual models
+#LANGUAGE_SEL = 'Finnish' # best for finnish content
 if 1:
-    print('Using OpenAI model for retrieval')
+    print('Using OpenAI embeddings for retrieval')
     DATABASE_DIRS = {'en':os.getcwd() + os.sep + 'ESCO_database_openai_en','fi':os.getcwd() + os.sep + 'ESCO_database_openai_fi'}
     embedding_ef = OpenAIEmbeddings(
         model_name="text-embedding-ada-002",

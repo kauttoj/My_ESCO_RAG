@@ -1,22 +1,18 @@
-import json
 import os
-import functions_framework
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import RunnablePassthrough
 from langchain.vectorstores.chroma import Chroma
 from langchain.embeddings import SentenceTransformerEmbeddings
 from langchain.embeddings import OpenAIEmbeddings
 import pandas as pd
 
+# code to precompute persisten vectorstore databases to be used during retrieval. Databases are stored on disk.
 # YOU MUST HAVE "OPENAI_API_KEY" environmental variable set!
 
-OPENAI_MODEL ="text-embedding-ada-002"
-HUGGINFACE_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-DATABASE_DIR = os.getcwd() + os.sep + 'ESCO_database_'
-SOURCE_DATA_PATH = 'C:\Code\ESCO_GPT\data\ESCO dataset - v1.1.1 - classification - {0} - csv'
+OPENAI_MODEL ="text-embedding-ada-002" # advanced embedding model (as of January 2024)
+HUGGINFACE_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" # simple free embedding model
+DATABASE_DIR = os.getcwd() + os.sep + 'ESCO_database_' # output paths
+SOURCE_DATA_PATH = 'C:\Code\ESCO_GPT\data\ESCO dataset - v1.1.1 - classification - {0} - csv'  # path to ESCO data, we add here language IDs (fi and en)
 
+# create embedding functions
 openai_ef = OpenAIEmbeddings(
     model_name="text-embedding-ada-002",
     api_key=os.getenv('OPENAI_API_KEY'),
@@ -37,7 +33,7 @@ for model in ['openai','huggingface']:
             assert vectorstore._collection.count() > 10, 'Empty database!'
             print("Old database loaded and ready")
         except:
-            print("Creating a new database, this will cost you!")
+            print("Creating a new database, this might cost you!")
             database = pd.read_csv(SOURCE_DATA_PATH + '\skills_{0}.csv'.format(lang))
             database = database.loc[database.skillType == 'skill/competence']
             database = database.loc[(database.description.map(lambda x:len(x))>30) & (database.preferredLabel.map(lambda x:len(x))>5)]

@@ -7,8 +7,12 @@ import urllib
 import time
 import os
 
+# This is a test code for HEADAI model to convert text into skill terms. You can choose either new or old API. You need tokens to run these.
+
 # You must have HEADAI token in your environmental variables as HEADAI_TOKEN!
-LANGUAGE = 'fi' # en
+LANGUAGE = 'en' # en  # choose language, not sure if matters...
+USE_OLD_API = 0  # use old of new API
+ONTOLOGY = 'esco' # headai # which ontology to use, options esco and headai
 
 def on_submit():
     teksti = input_textbox.get("1.0", tk.END).strip()
@@ -17,9 +21,15 @@ def on_submit():
         teksti = 'Haemme nyt Diktamenin kasvavaan joukkoon erikoissairaanhoidon tekstinkäsittelijöitä kokoaikaiseen työsuhteeseen. Meillä voit työskennellä toimistoaikojen puitteissa tai kaksivuorotyössä. Tekstinkäsittelijänä tehtäväsi on muuttaa lääkärin sanelema potilaskertomus kirjalliseen muotoon ja kirjata teksti potilasdokumenteiksi erilaisiin potilasjärjestelmiin. Käytännössä vastaat sinulle määritettyjen asiakkaiden saneluiden purkamisesta laatustandardiemme mukaisesti. Työsi on tärkeä osa terveydenhuollon kokonaisuutta, sillä oikea-aikainen potilasdokumentointi on kriittinen osa suomalaista terveydenhuoltojärjestelmää. Työsi ansiosta lääkärit voivat tehdä työnsä tehokkaammin ja vapauttaa aikaansa ihmisten auttamiseen. Sanelunpurkua ja potilasdokumentointia ei opeteta koulussa, joten perehdytämme sinut työhösi Helsingissä sijaitsevalla toimistollamme tai etänä videoyhteyksien välityksellä. Kokeneet sanelunpurun ammattilaiset huolehtivat, että opit ammatissa vaadittavat tiedot ja taidot pikavauhtia. Perehdytyksen jälkeen sinusta tulee oman asiakkuutesi asiantuntija, ja hallitset hyvin lääketieteen sanaston sekä muutamia potilastietojärjestelmiä. Voit työskennellä etänä mistä päin Suomea tahansa tai toimistollamme Helsingissä, Lahdessa, Kotkassa, Hämeenlinnassa tai Kouvolassa. Erikoissairaanhoidon tekstinkäsittelijän tehtävään odotamme aiempaa kokemusta alalta, eli sinulla tulisi olla sote-alan taustaa ja kyky hallita lääketieteellistä sanastoa. Jotta menestyt tässä työssä, sinulla on erinomainen kirjallinen suomen kielen taito ja kyky oppia uusia asioita nopeasti. Lisäksi käytät tietokonetta sujuvasti ja omaat hyvät tiedonhakutaidot. Bonusta saat ruotsin ja englannin kielen taidosta sekä yrittäjähenkisestä palveluasenteesta. Olemme erittäin innoissamme, jos hallitset kymmensormijärjestelmän tai potilastietojärjestelmien käyttämisen.'
         input_textbox.insert("1.0",teksti)
 
-    URL = "https://megatron.headai.com/TextToKeywords?"
-    TOKEN = os.getenv('HEADAI_TOKEN')
-    TOKEN_str = "language=%s&ontology=esco&token=%s&" % (LANGUAGE,TOKEN) # set language and ontology
+    if USE_OLD_API:
+        URL = "https://3amkapi.headai.com/microcompetencies?action=text_to_skills&"
+        TOKEN = os.getenv('HEADAI_TOKEN_OLD')
+    else:
+        URL = "https://megatron.headai.com/TextToKeywords?"
+        TOKEN = os.getenv('HEADAI_TOKEN')
+
+
+    TOKEN_str = "language=%s&ontology=%s&token=%s&" % (LANGUAGE,ONTOLOGY,TOKEN) # set language and ontology
 
     ssl._create_default_https_context = ssl._create_unverified_context
     url = URL + TOKEN_str + "text=" + urllib.parse.quote(teksti)
@@ -28,11 +38,15 @@ def on_submit():
     headai_words = {None:None}
     done=False
     while 1:
-        response = requests.get(url=url, timeout=5, data={}).json()
+        response = requests.get(url=url, timeout=15, data={}).json()
         time.sleep(2)
         try:
-            data_json = json.loads(urlopen(response['location'], timeout=5).read())
-            headai_words = {x['concept']: {'weight': x['weight'], 'count': x['count']} for x in data_json['skills']}
+            if USE_OLD_API:
+                headai_words = response['data']
+            else:
+                data_json = json.loads(urlopen(response['location'], timeout=5).read())
+                headai_words = {x['concept']: {'weight': x['weight'], 'count': x['count']} for x in data_json['skills']}
+                headai_words = list(headai_words.keys())
             done=True
         except:
             print('waiting for results...')
@@ -40,7 +54,7 @@ def on_submit():
             break
 
     print('Result: %s' % str(headai_words))
-    create_word_boxes(list(headai_words.keys()))
+    create_word_boxes(headai_words)
 
 def create_word_boxes(terms):
     frame = word_box_frame
@@ -73,7 +87,7 @@ root = tk.Tk()
 
 # Set window title and size
 root.title("HEADAI testing")
-root.geometry("800x600")
+root.geometry("1300x1000")
 
 # Configure rows and columns
 root.grid_rowconfigure(0, weight=1)
